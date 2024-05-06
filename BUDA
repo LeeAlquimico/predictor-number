@@ -1,0 +1,59 @@
+import numpy as np
+import pandas as pd
+from sklearn.neural_network import MLPClassifier
+
+
+def carrega_dados(sequencias):
+    # carrega os dados de treinamento
+    dados = pd.read_csv(sequencias)
+
+    # extrai as sequências e os rótulos
+    X = dados.values[:, :-1]
+    y = dados.values[:, -1]
+
+    return X, y
+
+
+def treina_modelo(X, y):
+    # cria o modelo MLP
+    model = MLPClassifier(hidden_layer_sizes=(30, 20, 15), max_iter=1000)
+
+    # treina o modelo
+    model.fit(X, y)
+
+    return model
+
+
+def previ_sequencia(model, sequencia):
+    # obtém os índices das posições em ordem decrescente de probabilidade
+    indices_previstos = np.argsort(model.predict_proba([sequencia])[0])[::-1]
+
+    # obtém os valores previstos em ordem crescente
+    valores_previstos = np.sort(X[:, indices_previstos][:, :15], axis=0)
+
+    return valores_previstos
+
+
+def imprime_sequencias(valores_previstos, num_sequencias):
+    # imprime as sequências previstas em ordem crescente
+    for seq in valores_previstos[:num_sequencias]:
+        print(seq)
+
+
+if __name__ == '__main__':
+    # carrega os dados de treinamento
+    X, y = carrega_dados('sequencias.csv')
+
+    # treina o modelo
+    model = treina_modelo(X, y)
+
+    # define a sequência a ser prevista
+    nova_sequencia = np.array([5, 3, 6, 1, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    nova_sequencia = nova_sequencia[:-1] # remove o último elemento
+
+    # prevê a sequência completa
+    valores_previstos = previ_sequencia(model, nova_sequencia)
+
+    # imprime as 10 sequências previstas em ordem crescente
+    num_sequencias = 10
+    imprime_sequencias(valores_previstos, num_sequencias)
